@@ -1,4 +1,5 @@
 const User = require('../models/User')
+const Product = require('../models/Product')
 const bcryptjs = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 require('dotenv').config({path: 'variables.env'})
@@ -13,14 +14,34 @@ const createToken = (user, secretword, expiresIn) => {
 //Resolvers
 const resolvers = {
     Query: {
+        //Users
         getUser: async (_,{token}) => {
             const userId = await jwt.verify(token, process.env.SECRETWORD)
             return userId
+        },
+
+        //Products
+        getProducts: async () => {
+            try{
+                const products = await Product.find({})
+                return products
+            }catch (error){
+                console.log(error)
+            }
+        },
+        getProductById: async (_,{id}) => {
+            //Revisar si el producto Existe
+            const existProduct = await Product.findById(id)
+            if(!existProduct){
+                throw new Error('Producto no encontrado')
+            }
+            return existProduct
         }
     },
     Mutation:{
-        newUser: async (_,{input}) => {
 
+        //Users
+        newUser: async (_,{input}) => {
             //Destructuring
             const { email, password } = input
 
@@ -44,7 +65,6 @@ const resolvers = {
                 console.log(error)
             }
         },
-
         authUser: async (_,{input}) => {
 
             //Destructuring
@@ -67,6 +87,42 @@ const resolvers = {
             return{
                 token: createToken(existUser, process.env.SECRETWORD, '24h')
             }
+        },
+
+        //Products
+        newProduct: async (_,{input}) => {
+            //Destructuring
+//            const { name,price,stock } = input
+
+            try{
+                //Guardar en la base de datos
+                const product = new Product(input)
+                const resultado = await product.save() // Guardado
+                return resultado
+
+            }catch (error){
+                console.log(error)
+            }            
+        },
+        editProduct: async (_,{id,input}) => {
+            //Revisar si el producto Existe
+            let existProduct = await Product.findById(id)
+            if(!existProduct){
+                throw new Error('Producto no encontrado')
+            }
+            //guardar en la base de datos
+            existProduct = await Product.findOneAndUpdate({_id: id}, input, {new:true})
+            return existProduct
+        },
+        deleteProduct: async (_,{id}) => {
+            //Revisar si el producto Existe
+            let existProduct = await Product.findById(id)
+            if(!existProduct){
+                throw new Error('Producto no encontrado')
+            }
+            //Eliminar
+            existProduct = await Product.findByIdAndDelete({_id : id})
+            return existProduct
         }
     }
 }
