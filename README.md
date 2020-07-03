@@ -13,4 +13,4 @@ V0.01
 * **Diego Villalobos** - *Desarrollo completo* - [dcodesv](https://github.com/dcodesv)
 
 ---
-⌨️ con ❤️ por [dcodesv](dcodesv.dev) 😊
+⌨️ con ❤️ por [dcodesv](https://dcodesv.dev) 😊
