@@ -1,5 +1,6 @@
 const User = require('../models/User')
 const Product = require('../models/Product')
+const Client = require('../models/Client')
 const bcryptjs = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 require('dotenv').config({path: 'variables.env'})
@@ -36,6 +37,15 @@ const resolvers = {
                 throw new Error('Producto no encontrado')
             }
             return existProduct
+        },
+
+        getClients: async () => {
+            try{
+                const clients = await Client.find({});
+                return clients;
+            }catch(error){
+                console.log(error)
+            }
         }
     },
     Mutation:{
@@ -123,6 +133,29 @@ const resolvers = {
             //Eliminar
             existProduct = await Product.findByIdAndDelete({_id : id})
             return existProduct
+        },
+
+        //Clientes
+        newClient: async (_, {input}, ctx) => {
+            console.log(ctx);
+            const {email} = input;
+            //Verificar que el cliente ya esta registrado
+            const client = await Client.findOne({ email });
+            if(client){
+                throw new Error('El cliente ya esta asignado');
+            }
+            const saveClient = new Client(input);
+            //Asign user id 
+            saveClient.seller = ctx.user.id;
+
+            try{
+                
+                const result =  await saveClient.save();
+                return result;   
+            }catch(error){
+                console.log(error);
+            }
+
         }
     }
 }
