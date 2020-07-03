@@ -46,6 +46,33 @@ const resolvers = {
             }catch(error){
                 console.log(error)
             }
+        },
+        getClientsBySeller: async (_, {}, ctx) => {
+            try{
+                const clients = await Client.find({seller: ctx.user.id.toString()});
+                return clients;
+            }catch(error){
+                console.log(error)
+            }
+        },
+        getClientById: async (_,{id}) => {
+            //Revisar si el producto Existe
+            const existClient = await Client.findById(id)
+            if(!existClient){
+                throw new Error('Cliente no encontrado')
+            }
+            return existClient
+        },
+        getClientByIdBySeller: async (_,{id}, ctx) => {
+            //Revisar si el producto Existe
+            const existClient = await Client.findById(id)
+            if(!existClient){
+                throw new Error('Cliente no encontrado')
+            }
+            if(existClient.seller.toString() !== ctx.user.id){
+                throw new Error ('No estas autorizado para ver este cliente');
+            }
+            return existClient
         }
     },
     Mutation:{
@@ -156,7 +183,57 @@ const resolvers = {
                 console.log(error);
             }
 
-        }
+        },
+        editClient: async (_,{id,input}) => {
+            //Revisar si el Cliente Existe
+            let existClient = await Client.findById(id)
+            if(!existClient){
+                throw new Error('Cliente no encontrado')
+            }
+            //guardar en la base de datos
+            existClient = await Client.findOneAndUpdate({_id: id}, input, {new:true})
+            return existClient
+        },
+        deleteClient: async (_,{id}) => {
+            //Revisar si el Cliente Existe
+            let existClient = await Client.findById(id)
+            if(!existClient){
+                throw new Error('Cliente no encontrado')
+            }
+            //Eliminar
+            existClient = await Client.findByIdAndDelete({_id : id})
+            return existClient
+        },
+
+        //Edit and delete by Seller
+        editClientBySeller: async (_,{id,input}, ctx) => {
+            //Revisar si el Cliente Existe
+            let existClient = await Client.findById(id)
+            if(!existClient){
+                throw new Error('Cliente no encontrado')
+            }
+            //Verificamos que el vendedor sea el que edita
+            if(existClient.seller.toString() !== ctx.user.id){
+                throw new Error ('No estas autorizado para editar este cliente');
+            } 
+            //guardar en la base de datos
+            existClient = await Client.findOneAndUpdate({_id: id}, input, {new:true})
+            return existClient
+        },
+        deleteClientBySeller: async (_,{id}, ctx) => {
+            //Revisar si el Cliente Existe
+            let existClient = await Client.findById(id)
+            if(!existClient){
+                throw new Error('Cliente no encontrado')
+            }
+            //Verificamos que el vendedor sea el que elimina
+            if(existClient.seller.toString() !== ctx.user.id){
+                throw new Error ('No estas autorizado para eliminar este cliente');
+            } 
+            //Eliminar
+            existClient = await Client.findByIdAndDelete({_id : id})
+            return existClient
+        },
     }
 }
 
