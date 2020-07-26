@@ -1,6 +1,7 @@
 const User = require('../models/User')
 const Product = require('../models/Product')
 const Client = require('../models/Client')
+const Order = require('../models/Order')
 const bcryptjs = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 require('dotenv').config({path: 'variables.env'})
@@ -73,6 +74,23 @@ const resolvers = {
                 throw new Error ('No estas autorizado para ver este cliente');
             }
             return existClient
+        },
+
+        getOrder: async () => {
+            try{
+                const order = await Order.find({});
+                return order;
+            }catch(error){
+                console.log(error);
+            }
+        },
+        getOrderBySeller: async (_, {}, ctx) => {
+            try{
+                const order = await Order.find({seller: ctx.user.id});
+                return order;
+            }catch(error){
+                console.log(error);
+            }
         }
     },
     Mutation:{
@@ -234,6 +252,48 @@ const resolvers = {
             existClient = await Client.findByIdAndDelete({_id : id})
             return existClient
         },
+
+        newOrder: async (_, {input}, ctx) =>{
+            const {client} = input
+            //Verificar si el cliente existe
+            let existClient = await Client.findById(id)
+            if(!existClient){
+                throw new Error('Cliente no encontrado')
+            }
+
+            //Verificar si el cliente es del vendedor
+            if(existClient.seller.toString() !== ctx.user.id){
+                throw new Error ('No estas autorizado para eliminar este cliente');
+            } 
+
+            //Revisar que el stock este disponible
+            for await (const art of input.order) {
+                const {id} = art;
+
+                const product = await Product.findById(id);
+
+                if(art.quantity > product.stock){
+                    throw new Error(`El articulo : ${product.name} excede la cantidad disponible`)
+                }else{
+                    product.stock = product.stock - art.quantity;
+                    await product.save();
+                }
+            }
+
+            //Crear pedido
+            const newOrder = new Order(input);
+
+            //Asignarle un vendedor
+            newOrder.seller = ctx.user.id;
+
+            const result = await newOrder.save();
+            return result;
+
+            //
+        }
+
+
+
     }
 }
 

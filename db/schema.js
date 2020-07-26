@@ -38,6 +38,7 @@ const typeDefs = gql`
         Client: ID
         Seller: ID
         created: String
+        state: orderState
     }
     type listProductsOrder{
         id: ID
@@ -96,6 +97,9 @@ const typeDefs = gql`
         getClientsBySeller: [Client]
         getClientById(id: ID!): Client
         getClientByIdBySeller(id: ID!): Client
+
+        #Order
+        getOrder: [Order]
     }
 
     type Mutation{
