@@ -1,4 +1,4 @@
-const moongose = require("mongoose");
+const mongoose = require("mongoose");
 const OrderSchema = mongoose.Schema({
     order:{
         type: Array,
@@ -9,12 +9,12 @@ const OrderSchema = mongoose.Schema({
         required: true
     },
     client:{
-        type: moongose.Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref:'Client'
     },
     seller:{
-        type: moongose.Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref:'User'
     },

@@ -91,6 +91,24 @@ const resolvers = {
             }catch(error){
                 console.log(error);
             }
+        },
+        getOrderById: async (_,{id}, ctx) =>{
+            try{    
+                //Revisar si el pedido Existe
+                const existOrder = await Order.findById(id)
+                if(!existOrder){
+                    throw new Error('Pedido no encontrado')
+                }
+                return existOrder;
+
+                //Solo quien lo creo lo puede ver
+                if(existOrder.seller.toString() !== ctx.user.id){
+                    throw new Error('No tienes permisos para ver esta orden.')
+                }
+                
+            }catch(error){
+                console.log(error);            
+            }
         }
     },
     Mutation:{
@@ -256,14 +274,14 @@ const resolvers = {
         newOrder: async (_, {input}, ctx) =>{
             const {client} = input
             //Verificar si el cliente existe
-            let existClient = await Client.findById(id)
+            let existClient = await Client.findById(client)
             if(!existClient){
                 throw new Error('Cliente no encontrado')
             }
 
             //Verificar si el cliente es del vendedor
             if(existClient.seller.toString() !== ctx.user.id){
-                throw new Error ('No estas autorizado para eliminar este cliente');
+                throw new Error ('No estas autorizado para crear orden para este cliente');
             } 
 
             //Revisar que el stock este disponible
@@ -290,7 +308,51 @@ const resolvers = {
             return result;
 
             //
-        }
+        },
+        editOrder: async (_,{id,input}, ctx) => {
+            const {client} = input
+            //Revisar si el Pedido Existe
+            let existOrder = await Order.findById(id)
+            if(!existOrder){
+                throw new Error('Pedido no encontrado')
+            }
+            //Revisar si el Cliente Existe
+            let existClient = await Client.findById(client)
+            if(!existClient){
+                throw new Error('Cliente no encontrado')
+            }
+            //Verificar si el cliente es del vendedor
+            if(existClient.seller.toString() !== ctx.user.id){
+                throw new Error ('No estas autorizado para crear orden para este cliente');
+            } 
+            //Revisar que el stock este disponible
+            for await (const art of input.order) {
+                const {id} = art;
+
+                const product = await Product.findById(id);
+
+                if(art.quantity > product.stock){
+                    throw new Error(`El articulo : ${product.name} excede la cantidad disponible`)
+                }else{
+                    product.stock = product.stock - art.quantity;
+                    await product.save();
+                }
+            }
+            
+            //Guardar pedido
+            const result = await Order.findOneAndUpdate({_id: id}, input, {new:true})
+            return result
+        },
+        deleteOrder: async (_,{id}) => {
+            //Revisar si el Cliente Existe
+            let existClient = await Client.findById(id)
+            if(!existClient){
+                throw new Error('Cliente no encontrado')
+            }
+            //Eliminar
+            existClient = await Client.findByIdAndDelete({_id : id})
+            return existClient
+        },
 
 
 

@@ -35,8 +35,8 @@ const typeDefs = gql`
         id: ID
         order: [listProductsOrder]
         total: Float
-        Client: ID
-        Seller: ID
+        client: ID
+        seller: ID
         created: String
         state: orderState
     }
@@ -74,8 +74,8 @@ const typeDefs = gql`
     }
     input orderInput{
         order: [orderProductInput]
-        total: Float!
-        client: ID!
+        total: Float    
+        client: ID
         state: orderState
     }
     enum orderState{
@@ -100,6 +100,8 @@ const typeDefs = gql`
 
         #Order
         getOrder: [Order]
+        getOrderBySeller: [Order]
+        getOrderById(id: ID!): Order
     }
 
     type Mutation{
@@ -121,6 +123,8 @@ const typeDefs = gql`
 
         # Order
         newOrder(input: orderInput) : Order
+        editOrder(id: ID!, input: orderInput): Order
+        deleteOrder(id: ID!): Order
     }
 `;
 
