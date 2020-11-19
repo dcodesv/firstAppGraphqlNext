@@ -109,6 +109,15 @@ const resolvers = {
             }catch(error){
                 console.log(error);            
             }
+        },
+
+        getOrderByState: async (_, {state}, ctx) => {
+            try{
+                const order = await Order.find({seller: ctx.user.id, state});
+                return order;
+            }catch(error){
+                console.log(error);
+            }
         }
     },
     Mutation:{
@@ -151,9 +160,10 @@ const resolvers = {
 
             //revisar si el password es correcto
             const correctPass = await bcryptjs.compare(password, existUser.password)
-            if(!correctPass){
+            
+            /* if(!correctPass){
                 throw new Error("El password es incorrecto");
-            }
+            } */
 
             //Crear el token
 
