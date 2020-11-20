@@ -118,6 +118,24 @@ const resolvers = {
             }catch(error){
                 console.log(error);
             }
+        },
+        
+        getBestClients: async () =>{
+            try{
+                const clients = await Order.aggregate([
+                    { $match : {state:'COMPLETED'}},
+                    { $group : {
+                        _id: '$client',
+                        total: { $sum : '$total'}
+                    }},
+
+                    $lookup: {
+                        from  = 'Clientes'
+                    }
+                ])
+            }catch(error){
+                console.log(error);
+            }
         }
     },
     Mutation:{
