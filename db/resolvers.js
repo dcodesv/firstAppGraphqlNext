@@ -127,11 +127,7 @@ const resolvers = {
                     { $group : {
                         _id: '$client',
                         total: { $sum : '$total'}
-                    }},
-
-                    $lookup: {
-                        from  = 'Clientes'
-                    }
+                    }}
                 ])
             }catch(error){
                 console.log(error);
