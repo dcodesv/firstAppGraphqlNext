@@ -44,8 +44,8 @@ const typeDefs = gql`
         id: ID
         quantity: Int
     }
-    type topClient{
-        total: float
+    type TopClient{
+        total: Float
         client: [Client]
     }
 
